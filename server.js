@@ -5,7 +5,7 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 const MAGIC_HOUR_API_KEY = process.env.MAGIC_HOUR_API_KEY;
-const MAGIC_HOUR_MODEL = process.env.MAGIC_HOUR_MODEL || 'kling-3.0';
+const MAGIC_HOUR_MODEL = process.env.MAGIC_HOUR_MODEL || 'ltx-2.3';
 const MAGIC_HOUR_BASE = 'https://api.magichour.ai/v1';
 
 if (!MAGIC_HOUR_API_KEY) {
@@ -28,7 +28,7 @@ app.post('/api/generate', async (req, res) => {
       name: `Cymor Video ${Date.now()}`,
       end_seconds: Number(endSeconds) || 5,
       aspect_ratio: aspectRatio || '16:9',
-      resolution: resolution || '720p',
+      resolution: resolution || '480p',
       model: MAGIC_HOUR_MODEL,
       audio: true,
       style: {
