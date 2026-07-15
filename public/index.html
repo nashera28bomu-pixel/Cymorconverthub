@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cymor Video Generator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --dark: #0B0B0D;
+    --panel: #17161C;
+    --panel-edge: #232128;
+    --safelight: #D62839;
+    --safelight-dim: #7A1522;
+    --amber: #F2A93B;
+    --paper: #EDEAE3;
+    --paper-dim: #9A968E;
+    --mono: 'IBM Plex Mono', monospace;
+    --serif: 'Fraunces', serif;
+    --sans: 'Work Sans', sans-serif;
+  }
+
+  *{ box-sizing: border-box; }
+  html,body{ margin:0; padding:0; }
+
+  body{
+    background: var(--dark);
+    color: var(--paper);
+    font-family: var(--sans);
+    min-height: 100vh;
+    overflow-x: hidden;
+    background-image:
+      radial-gradient(ellipse 900px 500px at 50% -10%, rgba(214,40,57,0.10), transparent 60%);
+  }
+
+  /* ---------- Header ---------- */
+  header{
+    padding: 28px 20px 10px;
+    text-align: center;
+  }
+  .wordmark{
+    font-family: var(--serif);
+    font-optical-sizing: auto;
+    font-weight: 600;
+    font-size: clamp(28px, 6vw, 42px);
+    letter-spacing: -0.01em;
+    color: var(--paper);
+    margin: 0;
+  }
+  .wordmark span{ color: var(--safelight); font-style: italic; font-weight: 400; }
+  .tagline{
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--paper-dim);
+    margin: 6px 0 0;
+  }
+
+  /* ---------- Main card ---------- */
+  main{
+    max-width: 520px;
+    margin: 18px auto 60px;
+    padding: 0 18px;
+  }
+
+  .tray{
+    background: var(--panel);
+    border: 1px solid var(--panel-edge);
+    border-radius: 14px;
+    padding: 22px;
+    position: relative;
+  }
+  .tray::before{
+    content: "";
+    position: absolute;
+    top: 0; left: 18px; right: 18px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(214,40,57,0.5), transparent);
+  }
+
+  label{
+    display: block;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin: 18px 0 8px;
+  }
+  label:first-of-type{ margin-top: 0; }
+
+  textarea{
+    width: 100%;
+    background: #0F0E12;
+    border: 1px solid var(--panel-edge);
+    border-radius: 8px;
+    color: var(--paper);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.5;
+    padding: 12px 14px;
+    resize: vertical;
+    min-height: 88px;
+  }
+  textarea:focus, select:focus{
+    outline: none;
+    border-color: var(--safelight);
+  }
+  textarea::placeholder{ color: #605C63; }
+
+  .row{ display:flex; gap: 10px; }
+  .row > div{ flex: 1; }
+
+  select{
+    width: 100%;
+    background: #0F0E12;
+    border: 1px solid var(--panel-edge);
+    color: var(--paper);
+    font-family: var(--mono);
+    font-size: 13px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%239A968E'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+  }
+
+  .develop-btn{
+    width: 100%;
+    margin-top: 22px;
+    padding: 15px;
+    background: var(--safelight);
+    color: #1A0A0C;
+    border: none;
+    border-radius: 8px;
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: transform 0.15s ease, background 0.15s ease;
+  }
+  .develop-btn:hover{ background: #E33B4C; }
+  .develop-btn:active{ transform: scale(0.98); }
+  .develop-btn:disabled{ background: #4A2226; color: #7A6367; cursor: not-allowed; }
+
+  .credit-note{
+    font-family: var(--mono);
+    font-size: 10.5px;
+    color: var(--paper-dim);
+    text-align: center;
+    margin-top: 14px;
+    letter-spacing: 0.03em;
+  }
+
+  .error-box{
+    display:none;
+    margin-top: 16px;
+    padding: 12px 14px;
+    background: rgba(214,40,57,0.1);
+    border: 1px solid var(--safelight-dim);
+    border-radius: 8px;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: #F2A0A8;
+  }
+
+  /* ---------- Overlay ---------- */
+  .overlay{
+    position: fixed;
+    inset: 0;
+    background: rgba(6,5,7,0.94);
+    backdrop-filter: blur(2px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 20px;
+  }
+  .overlay.active{ display: flex; }
+
+  .overlay-card{
+    max-width: 420px;
+    width: 100%;
+    text-align: center;
+  }
+
+  /* Safelight pulse + aperture */
+  .aperture{
+    width: 92px; height: 92px;
+    margin: 0 auto 26px;
+    position: relative;
+  }
+  .aperture-ring{
+    position: absolute; inset: 0;
+    border-radius: 50%;
+    border: 2px solid var(--safelight-dim);
+  }
+  .aperture-ring.spin{
+    border-top-color: var(--safelight);
+    border-right-color: var(--safelight);
+    animation: spin 1.4s linear infinite;
+  }
+  .aperture-glow{
+    position: absolute;
+    inset: 18px;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--amber), var(--safelight) 70%);
+    filter: blur(1px);
+    animation: pulse 1.8s ease-in-out infinite;
+  }
+  @keyframes spin{ to{ transform: rotate(360deg); } }
+  @keyframes pulse{
+    0%, 100%{ opacity: 0.55; transform: scale(0.92); }
+    50%{ opacity: 1; transform: scale(1.05); }
+  }
+
+  .stage-label{
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 8px;
+  }
+  .stage-title{
+    font-family: var(--serif);
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0 0 10px;
+    color: var(--paper);
+  }
+  .stage-sub{
+    font-family: var(--sans);
+    font-size: 13.5px;
+    color: var(--paper-dim);
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  /* Developing tray progress bar (liquid fill) */
+  .tray-progress{
+    margin: 26px auto 0;
+    width: 100%;
+    max-width: 280px;
+    height: 8px;
+    border-radius: 6px;
+    background: #0F0E12;
+    border: 1px solid var(--panel-edge);
+    overflow: hidden;
+  }
+  .tray-progress-fill{
+    height: 100%;
+    width: 12%;
+    background: linear-gradient(90deg, var(--safelight-dim), var(--safelight), var(--amber));
+    background-size: 200% 100%;
+    animation: liquid 2.2s ease-in-out infinite;
+    transition: width 0.6s ease;
+  }
+  @keyframes liquid{
+    0%{ background-position: 0% 0; }
+    100%{ background-position: 200% 0; }
+  }
+
+  .timer{
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--paper-dim);
+    margin-top: 12px;
+    letter-spacing: 0.05em;
+  }
+
+  /* Ready state — print emerging from the tray */
+  .print-frame{
+    position: relative;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--panel-edge);
+    background: #000;
+    margin-bottom: 20px;
+    box-shadow: 0 20px 60px rgba(214,40,57,0.12);
+  }
+  .print-frame video{
+    display:block;
+    width: 100%;
+    max-height: 60vh;
+    animation: develop 1.4s ease-out;
+  }
+  @keyframes develop{
+    0%{ filter: brightness(0.15) contrast(1.6) saturate(0); opacity: 0.3; }
+    60%{ filter: brightness(0.7) contrast(1.2) saturate(0.6); opacity: 0.85; }
+    100%{ filter: brightness(1) contrast(1) saturate(1); opacity: 1; }
+  }
+
+  .ready-actions{
+    display: flex;
+    gap: 10px;
+    max-width: 420px;
+    margin: 0 auto;
+  }
+  .ready-actions a, .ready-actions button{
+    flex: 1;
+    padding: 13px;
+    border-radius: 8px;
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-decoration: none;
+    text-align: center;
+    cursor: pointer;
+    border: none;
+  }
+  .ready-actions a{
+    background: var(--amber);
+    color: #241705;
+    font-weight: 600;
+  }
+  .ready-actions button{
+    background: transparent;
+    color: var(--paper);
+    border: 1px solid var(--panel-edge);
+  }
+  .ready-actions button:hover{ border-color: var(--safelight); }
+
+  .close-overlay{
+    position: absolute;
+    top: 22px; right: 22px;
+    background: none;
+    border: none;
+    color: var(--paper-dim);
+    font-family: var(--mono);
+    font-size: 20px;
+    cursor: pointer;
+    line-height: 1;
+  }
+  .close-overlay:hover{ color: var(--paper); }
+
+  footer{
+    text-align: center;
+    padding: 20px;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    color: #4A4750;
+    letter-spacing: 0.06em;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .aperture-ring.spin, .aperture-glow, .tray-progress-fill, .print-frame video{
+      animation: none !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <p class="tagline">Cymor Tech Services</p>
+  <h1 class="wordmark">Cymor <span>Video</span></h1>
+  <p class="tagline">describe it. watch it develop.</p>
+</header>
+
+<main>
+  <div class="tray">
+    <label for="prompt">Scene description</label>
+    <textarea id="prompt" placeholder="A matatu speeding through Nairobi traffic at golden hour, dust and motion blur, cinematic..."></textarea>
+
+    <div class="row">
+      <div>
+        <label for="aspect">Aspect ratio</label>
+        <select id="aspect">
+          <option value="16:9">16:9 — widescreen</option>
+          <option value="9:16">9:16 — reels / stories</option>
+          <option value="1:1">1:1 — square</option>
+        </select>
+      </div>
+      <div>
+        <label for="duration">Duration</label>
+        <select id="duration">
+          <option value="5">5 seconds</option>
+          <option value="10">10 seconds</option>
+        </select>
+      </div>
+    </div>
+
+    <button class="develop-btn" id="developBtn">Develop video</button>
+    <p class="credit-note" id="creditNote">Uses Magic Hour API credits per render</p>
+    <div class="error-box" id="errorBox"></div>
+  </div>
+</main>
+
+<footer>Cymor Video Generator — powered by Magic Hour</footer>
+
+<!-- CREATING / DEVELOPING OVERLAY -->
+<div class="overlay" id="loadingOverlay">
+  <div class="overlay-card">
+    <div class="aperture">
+      <div class="aperture-ring spin"></div>
+      <div class="aperture-glow"></div>
+    </div>
+    <p class="stage-label" id="stageLabel">Queued</p>
+    <h2 class="stage-title" id="stageTitle">Loading the tank&hellip;</h2>
+    <p class="stage-sub" id="stageSub">Your prompt is in the queue. This usually takes a few minutes — hang tight, the safelight's on.</p>
+    <div class="tray-progress"><div class="tray-progress-fill" id="progressFill"></div></div>
+    <p class="timer" id="timer">00:00 elapsed</p>
+  </div>
+</div>
+
+<!-- READY OVERLAY -->
+<div class="overlay" id="readyOverlay">
+  <div class="overlay-card" style="max-width:520px;">
+    <button class="close-overlay" id="closeReady" aria-label="Close">&times;</button>
+    <p class="stage-label">Ready</p>
+    <h2 class="stage-title" style="margin-bottom:18px;">Your print is dry</h2>
+    <div class="print-frame">
+      <video id="resultVideo" controls autoplay loop playsinline></video>
+    </div>
+    <div class="ready-actions">
+      <a id="downloadLink" href="#" download>Download</a>
+      <button id="generateAnother">Develop another</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const developBtn = document.getElementById('developBtn');
+  const promptEl = document.getElementById('prompt');
+  const aspectEl = document.getElementById('aspect');
+  const durationEl = document.getElementById('duration');
+  const errorBox = document.getElementById('errorBox');
+
+  const loadingOverlay = document.getElementById('loadingOverlay');
+  const readyOverlay = document.getElementById('readyOverlay');
+  const stageLabel = document.getElementById('stageLabel');
+  const stageTitle = document.getElementById('stageTitle');
+  const stageSub = document.getElementById('stageSub');
+  const progressFill = document.getElementById('progressFill');
+  const timerEl = document.getElementById('timer');
+  const resultVideo = document.getElementById('resultVideo');
+  const downloadLink = document.getElementById('downloadLink');
+
+  let pollHandle = null;
+  let timerHandle = null;
+  let elapsedSeconds = 0;
+
+  const STAGES = {
+    queued:    { label: 'Queued',    title: 'Loading the tank\u2026',    sub: 'Your prompt is in the queue. This usually takes a few minutes \u2014 hang tight, the safelight\u2019s on.', progress: 12 },
+    rendering: { label: 'Developing', title: 'Image is developing\u2026', sub: 'Frames are forming in the chemical bath. Do not open the tank early.', progress: 55 },
+    complete:  { label: 'Ready',      title: 'Fixing the print\u2026',    sub: 'Almost there \u2014 final pass before it comes out to dry.', progress: 92 }
+  };
+
+  function showError(msg){
+    errorBox.textContent = msg;
+    errorBox.style.display = 'block';
+  }
+  function hideError(){
+    errorBox.style.display = 'none';
+  }
+
+  function setStage(key){
+    const s = STAGES[key] || STAGES.queued;
+    stageLabel.textContent = s.label;
+    stageTitle.textContent = s.title;
+    stageSub.textContent = s.sub;
+    progressFill.style.width = s.progress + '%';
+  }
+
+  function startTimer(){
+    elapsedSeconds = 0;
+    timerHandle = setInterval(() => {
+      elapsedSeconds++;
+      const m = String(Math.floor(elapsedSeconds / 60)).padStart(2, '0');
+      const s = String(elapsedSeconds % 60).padStart(2, '0');
+      timerEl.textContent = `${m}:${s} elapsed`;
+    }, 1000);
+  }
+  function stopTimer(){
+    clearInterval(timerHandle);
+  }
+
+  function resetForm(){
+    loadingOverlay.classList.remove('active');
+    readyOverlay.classList.remove('active');
+    developBtn.disabled = false;
+    developBtn.textContent = 'Develop video';
+    stopTimer();
+    clearInterval(pollHandle);
+  }
+
+  async function pollStatus(id){
+    try {
+      const res = await fetch(`/api/status/${id}`);
+      const data = await res.json();
+
+      if (!res.ok) {
+        clearInterval(pollHandle);
+        stopTimer();
+        loadingOverlay.classList.remove('active');
+        developBtn.disabled = false;
+        developBtn.textContent = 'Develop video';
+        showError(data.error || 'The render failed. Try a different prompt.');
+        return;
+      }
+
+      if (data.status === 'error') {
+        clearInterval(pollHandle);
+        stopTimer();
+        loadingOverlay.classList.remove('active');
+        developBtn.disabled = false;
+        developBtn.textContent = 'Develop video';
+        showError((data.error && data.error.message) || 'The render failed. Try a different prompt.');
+        return;
+      }
+
+      if (data.status === 'complete') {
+        clearInterval(pollHandle);
+        stopTimer();
+        progressFill.style.width = '100%';
+        const videoUrl = data.downloads && data.downloads[0] && data.downloads[0].url;
+        setTimeout(() => {
+          loadingOverlay.classList.remove('active');
+          if (videoUrl) {
+            resultVideo.src = videoUrl;
+            downloadLink.href = videoUrl;
+            readyOverlay.classList.add('active');
+          } else {
+            showError('Render finished but no video URL came back. Check your Magic Hour dashboard.');
+          }
+          developBtn.disabled = false;
+          developBtn.textContent = 'Develop video';
+        }, 500);
+        return;
+      }
+
+      // queued / rendering / any other in-progress status
+      setStage(data.status === 'rendering' ? 'rendering' : 'queued');
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  developBtn.addEventListener('click', async () => {
+    hideError();
+    const prompt = promptEl.value.trim();
+    if (!prompt) {
+      showError('Describe the scene you want first.');
+      return;
+    }
+
+    developBtn.disabled = true;
+    developBtn.textContent = 'Sending to the lab\u2026';
+    setStage('queued');
+    loadingOverlay.classList.add('active');
+    startTimer();
+
+    try {
+      const res = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt,
+          aspectRatio: aspectEl.value,
+          endSeconds: durationEl.value,
+          resolution: '720p'
+        })
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        stopTimer();
+        loadingOverlay.classList.remove('active');
+        developBtn.disabled = false;
+        developBtn.textContent = 'Develop video';
+        showError(data.error || 'Could not start the render.');
+        return;
+      }
+
+      pollHandle = setInterval(() => pollStatus(data.id), 4000);
+      pollStatus(data.id);
+    } catch (err) {
+      stopTimer();
+      loadingOverlay.classList.remove('active');
+      developBtn.disabled = false;
+      developBtn.textContent = 'Develop video';
+      showError('Network error \u2014 check your connection and try again.');
+    }
+  });
+
+  document.getElementById('generateAnother').addEventListener('click', () => {
+    readyOverlay.classList.remove('active');
+    resultVideo.pause();
+    promptEl.value = '';
+    promptEl.focus();
+  });
+
+  document.getElementById('closeReady').addEventListener('click', () => {
+    readyOverlay.classList.remove('active');
+    resultVideo.pause();
+  });
+</script>
+
+</body>
+</html>
