@@ -389,8 +389,15 @@
       </div>
     </div>
 
+    <label for="resolution">Resolution</label>
+    <select id="resolution">
+      <option value="480p">480p — free tier</option>
+      <option value="720p">720p — needs a paid plan</option>
+      <option value="1080p">1080p — needs a paid plan</option>
+    </select>
+
     <button class="develop-btn" id="developBtn">Develop video</button>
-    <p class="credit-note" id="creditNote">Uses Magic Hour API credits per render</p>
+    <p class="credit-note" id="creditNote">Free tier: LTX 2.3, 480p only</p>
     <div class="error-box" id="errorBox"></div>
   </div>
 </main>
@@ -433,6 +440,7 @@
   const promptEl = document.getElementById('prompt');
   const aspectEl = document.getElementById('aspect');
   const durationEl = document.getElementById('duration');
+  const resolutionEl = document.getElementById('resolution');
   const errorBox = document.getElementById('errorBox');
 
   const loadingOverlay = document.getElementById('loadingOverlay');
@@ -567,7 +575,7 @@
           prompt,
           aspectRatio: aspectEl.value,
           endSeconds: durationEl.value,
-          resolution: '720p'
+          resolution: resolutionEl.value
         })
       });
       const data = await res.json();
